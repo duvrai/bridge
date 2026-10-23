@@ -7,6 +7,7 @@ import { Modal } from '../Modal'
 import { AppMenu } from '../AppMenu'
 import { Palette } from '../Palette'
 import { Preferences } from '../Preferences'
+import { ProjectBrowser } from '../ProjectBrowser'
 
 import { Icon } from '../Icon'
 
@@ -30,6 +31,7 @@ export function Header ({ title = DEFAULT_TITLE, features }) {
 
   const [paletteIsOpen, setPaletteIsOpen] = React.useState(false)
   const [prefsOpen, setPrefsOpen] = React.useState(false)
+  const [projectsOpen, setProjectsOpen] = React.useState(false)
 
   const isEditingLayout = shared?._connections?.[local?.id]?.isEditingLayout
 
@@ -124,6 +126,25 @@ export function Header ({ title = DEFAULT_TITLE, features }) {
       <Modal open={prefsOpen} onClose={() => setPrefsOpen(false)}>
         <Preferences onClose={() => setPrefsOpen(false)} />
       </Modal>
+      <Modal open={projectsOpen} onClose={() => setProjectsOpen(false)} closeOnShade theme='inherit'>
+        {
+          projectsOpen &&
+            <ProjectBrowser
+              currentName={shared?.url}
+              onDismiss={() => setProjectsOpen(false)}
+              onOpenProject={name => {
+                if (name === shared?.url) {
+                  setProjectsOpen(false)
+                  return
+                }
+                window.location.assign(`/projects/${encodeURIComponent(name)}`)
+              }}
+              onCurrentDeleted={() => {
+                window.location.assign('/')
+              }}
+            />
+        }
+      </Modal>
       <header
         className={`
           Header
@@ -139,6 +160,10 @@ export function Header ({ title = DEFAULT_TITLE, features }) {
             <>
               <div className='Header-title'>
                 <AppMenu />
+                {
+                  window.APP?.serverProjects && title && title !== DEFAULT_TITLE &&
+                    <span className='Header-projectName'>{title}</span>
+                }
               </div>
               <div className='Header-center'>
                 {
@@ -150,7 +175,12 @@ export function Header ({ title = DEFAULT_TITLE, features }) {
           )
           : (
             <>
-              <div className='Header-title' />
+              <div className='Header-title'>
+                {
+                  window.APP?.serverProjects && title && title !== DEFAULT_TITLE &&
+                    <span className='Header-projectName'>{title}</span>
+                }
+              </div>
               <div className='Header-center'>
                 {
                   (featureShown('palette') || paletteIsOpen) &&
@@ -188,7 +218,7 @@ export function Header ({ title = DEFAULT_TITLE, features }) {
           {
             window.APP?.serverProjects &&
             (
-              <button className='Header-button Header-button--label' onClick={() => { window.location.assign('/') }} title='Projects'>
+              <button className='Header-button Header-button--label Header-projectsBtn' onClick={() => setProjectsOpen(true)} title='Projects'>
                 Projects
               </button>
             )
