@@ -8,11 +8,16 @@
   display: flex;
   position: relative;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  container-type: inline-size;
 }
 
 .RundownItem-margin {
   margin: 0.9em 1em;
   width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .RundownItem.is-compact .RundownItem-margin {
@@ -34,13 +39,15 @@
 .RundownItem-section {
   display: flex;
   width: auto;
-  min-width: 0;
+  min-width: 2.2rem;
   flex: 1 1 auto;
   align-items: center;
+  overflow: hidden;
 }
 
 .RundownItem-section--right {
   flex: 0 0 auto;
+  overflow: visible;
   justify-content: flex-end;
 }
 
@@ -87,19 +94,58 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: var(--base-color);
 }
 
 .RundownItem-facts {
   display: flex;
   flex: 0 0 auto;
   align-items: center;
-  gap: 12px;
-  white-space: nowrap;
+  margin-left: 8px;
+  color: var(--base-color--shade4);
+  font-size: 0.85em;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .RundownItem-fact {
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  padding: 0 8px;
+  border-left: 1px solid var(--base-color--shade1);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: right;
+}
+
+.RundownItem-fact:first-child {
+  border-left: 0;
+}
+
+.RundownItem-fact--id {
+  flex: 0 1 7rem;
+  max-width: 7rem;
+  text-align: left;
+}
+
+.RundownItem-fact--channel,
+.RundownItem-fact--layer {
+  width: 3rem;
+}
+
+.RundownItem-fact--raster {
+  width: 6.6rem;
+}
+
+.RundownItem-fact--duration {
+  width: 8.2rem;
+}
+
+@container (max-width: 560px) {
+  .RundownItem-fact--id {
+    display: none;
+  }
 }
 
 .RundownItem-notes {

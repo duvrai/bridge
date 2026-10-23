@@ -194,17 +194,17 @@ export function RundownItem ({ index, icon, item, dropzone, onDrop = () => {} })
             {
               mediaLabel && (
                 <div className='RundownItem-facts'>
-                  <span className='RundownItem-fact' title={item?.id}>ID {item?.id}</span>
-                  <span className='RundownItem-fact'>CH {item?.data?.caspar?.channel}</span>
-                  <span className='RundownItem-fact'>L {item?.data?.caspar?.layer}</span>
+                  <span className='RundownItem-fact RundownItem-fact--id' title={item?.id}>ID {item?.id}</span>
+                  <span className='RundownItem-fact RundownItem-fact--channel'>CH {item?.data?.caspar?.channel}</span>
+                  <span className='RundownItem-fact RundownItem-fact--layer'>L {item?.data?.caspar?.layer}</span>
                   {
                     mediaLabel.picture && (
-                      <span className='RundownItem-fact' title={mediaLabel.pictureTitle}>{mediaLabel.picture}</span>
+                      <span className='RundownItem-fact RundownItem-fact--raster' title={mediaLabel.pictureTitle}>{mediaLabel.picture}</span>
                     )
                   }
                   {
                     mediaLabel.timecode && (
-                      <span className='RundownItem-fact' title={mediaLabel.secondsTitle}>{mediaLabel.timecode}</span>
+                      <span className='RundownItem-fact RundownItem-fact--duration' title={mediaLabel.secondsTitle}>{mediaLabel.timecode}</span>
                     )
                   }
                 </div>
