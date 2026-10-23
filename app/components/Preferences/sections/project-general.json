@@ -1,5 +1,16 @@
 [
   {
+    "title": "Server projects",
+    "inputs": [
+      {
+        "type": "warning",
+        "when": "serverProjects",
+        "title": "No login",
+        "description": "Projects are stored on the server. There is no login: anyone on the network can open, change and delete projects."
+      }
+    ]
+  },
+  {
     "title": "Named url",
     "description": "This workspace will become available as /named/<custom name> and persistent across restarts if a custom name is specified",
     "inputs": [

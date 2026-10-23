@@ -186,6 +186,14 @@ export function Header ({ title = DEFAULT_TITLE, features }) {
             )
           }
           {
+            window.APP?.serverProjects &&
+            (
+              <button className='Header-button Header-button--label' onClick={() => { window.location.assign('/') }} title='Projects'>
+                Projects
+              </button>
+            )
+          }
+          {
             featureShown('preferences') &&
             (
               <button className='Header-button Header-preferencesBtn' onClick={() => setPrefsOpen(true)} title='Preferences'>

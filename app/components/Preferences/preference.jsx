@@ -55,14 +55,19 @@ export function Preference ({ setting, values, onChange = () => {} }) {
       }
       {
         (setting.inputs || [])
+          .filter(input => !input.when || (input.when === 'serverProjects' && window.APP?.serverProjects))
           .filter(input => inputComponents[input.type])
           .map(input => {
             const InputComponent = inputComponents[input.type]
             const bind = `${setting.bind ? `${setting.bind}.` : ''}${input.bind ?? ''}`
+            const description = input.when === 'serverProjects' && window.APP?.projectsDirectory
+              ? `Projects are stored on the server in ${window.APP.projectsDirectory}. There is no login: anyone on the network can open, change and delete projects.`
+              : input.description
             return (
               <InputComponent
                 key={JSON.stringify(input)}
                 {...input}
+                description={description}
                 value={bind ? valueFromPath(bind) : undefined}
                 onChange={value => onChange(bind, value)}
               />

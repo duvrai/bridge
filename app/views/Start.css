@@ -1,0 +1,79 @@
+.ProjectList {
+  max-width: 40rem;
+  margin: 2rem auto;
+  padding: 0 1.25rem 2rem;
+  color: var(--base-color);
+}
+
+.ProjectList h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.4rem;
+}
+
+.ProjectList-note {
+  margin: 0 0 1rem;
+  color: var(--base-color--shade4);
+  line-height: 1.4;
+}
+
+.ProjectList-items {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  border: 1px solid var(--base-color--shade1);
+  border-radius: 6px;
+  min-height: 8rem;
+}
+
+.ProjectList-item {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.55rem 0.75rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ProjectList-item.is-selected {
+  background: var(--base-color--shade1);
+}
+
+.ProjectList-time {
+  color: var(--base-color--shade4);
+  font-variant-numeric: tabular-nums;
+}
+
+.ProjectList-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 0.75rem;
+}
+
+.ProjectList-field input {
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--base-color--shade1);
+  border-radius: 4px;
+  background: var(--base-color--background2);
+  color: inherit;
+}
+
+.ProjectList-actions,
+.ProjectList-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.ProjectList-confirm {
+  margin-top: 0.75rem;
+}
+
+.ProjectList-error {
+  color: var(--base-color--alert);
+}
