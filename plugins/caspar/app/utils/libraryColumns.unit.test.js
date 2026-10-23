@@ -28,7 +28,7 @@ test('cellText formats a 1080p50 movie and leaves a still without duration', () 
   }
   expect(cellText(movie, 'resolution')).toEqual('1920×1080')
   expect(cellText(movie, 'framerate')).toEqual('50 fps')
-  expect(cellText(movie, 'duration')).toEqual('1:08')
+  expect(cellText(movie, 'duration')).toEqual('00:01:08:17')
   expect(cellText(movie, 'size')).toEqual(formatBytes(123378979))
   expect(cellText(movie, 'date')).toEqual('2026-10-07 13:47')
 
@@ -87,6 +87,25 @@ test('tree uses the scanner path, keeps case and extension, and PLAY keeps the C
   expect(playable.data.name).toEqual('cellen04.mp4')
   expect(playable.data.caspar.target).toEqual('20261008 VIB/CELLEN04')
   expect(playable.data.caspar.path).toEqual('20261008 VIB/cellen04.mp4')
+})
+
+test('the name column stays first and sorting stays inside each folder', () => {
+  const layout = normalizeLayout({ order: ['date', 'type', 'name'], hidden: {} })
+  expect(visibleColumns(layout)[0].id).toEqual('name')
+
+  const rows = buildLibraryRows([
+    { name: 'A', displayPath: 'Folder/slow.mp4', type: 'VIDEO', scanner: { duration: 10, frames: 10 } },
+    { name: 'B', displayPath: 'Folder/fast.mp4', type: 'VIDEO', scanner: { duration: 2, frames: 10 } },
+    { name: 'C', displayPath: 'other.mp4', type: 'VIDEO', scanner: { duration: 100, frames: 10 } }
+  ], { expanded: { Folder: true }, sort: { id: 'duration', direction: 'asc' } })
+
+  expect(rows.map(row => row.kind === 'folder' ? row.name : cellText(row.item, 'name'))).toEqual([
+    'Folder',
+    'fast.mp4',
+    'slow.mp4',
+    'other.mp4'
+  ])
+  expect(rows[0].count).toEqual(2)
 })
 
 test('sortLibraryItems orders by duration descending', () => {

@@ -1,6 +1,8 @@
 import React from 'react'
 import bridge from 'bridge'
 
+import { formatExactSeconds, formatTimecode } from '../../../caspar/app/utils/mediaInfo.js'
+
 import './style.css'
 
 const MS = {
@@ -101,12 +103,8 @@ export function RundownItemTimeSection ({ item }) {
 
   return (
     <div className='RundownItemTimeSection'>
-      <div className='RundownItemProgress-value'>-
-        {
-          bridge.items.getEffectiveDuration(item) >= MS.hour
-            ? formatTime(remaining + MS.second, 'h:m:s')
-            : formatTime(remaining + MS.second, 'm:s')
-        }
+      <div className='RundownItemProgress-value' title={formatExactSeconds(remaining / MS.second)}>
+        -{formatTimecode(remaining / MS.second, item?.data?.frameRate) || formatTime(remaining, 'h:m:s')}
       </div>
     </div>
   )

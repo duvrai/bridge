@@ -3,14 +3,32 @@ import bridge from 'bridge'
 
 import './style.css'
 
+function FolderIcon () {
+  return (
+    <svg className='LibraryTable-folderIcon' viewBox='0 0 16 16' aria-hidden='true'>
+      <path fill='#5aa6e6' d='M1.2 3.2h4.6l1.3 1.4h7.7v8.2H1.2V3.2z' />
+    </svg>
+  )
+}
+
+function FileIcon () {
+  return (
+    <svg className='LibraryTable-folderIcon' viewBox='0 0 16 16' aria-hidden='true'>
+      <path fill='#9aa0a6' d='M3 1.5h6.2L13 5.3V14.5H3V1.5zm6 1.2V6h3.3' />
+    </svg>
+  )
+}
+
 import * as asset from '../../utils/asset.js'
 import { constructPlayableItemInit } from '../../utils/libraryItem.js'
+import { formatExactSeconds } from '../../utils/mediaInfo.js'
 import {
   LIBRARY_COLUMNS,
   LIBRARY_COLUMNS_STATE_PATH,
   buildLibraryRows,
   cellText,
   defaultLayout,
+  folderCell,
   libraryPath,
   normalizeLayout,
   readLocalLayout,
@@ -75,7 +93,7 @@ export const LibraryTable = ({ items = [], query = '', highlightItem, onItemClic
   }
 
   function moveColumn (sourceId, targetId) {
-    if (!sourceId || sourceId === targetId) {
+    if (!sourceId || sourceId === targetId || sourceId === 'name' || targetId === 'name') {
       return
     }
     updateLayout(current => {
@@ -149,6 +167,30 @@ export const LibraryTable = ({ items = [], query = '', highlightItem, onItemClic
   }
 
   function handleKeyDown (event) {
+    const row = focusedIndex != null ? rows[focusedIndex] : null
+    if (event.key === 'ArrowRight' && row?.kind === 'folder') {
+      event.preventDefault()
+      if (!row.open) {
+        toggleFolder(row.path)
+      } else {
+        setFocusedIndex(index => Math.min((index ?? 0) + 1, rows.length - 1))
+      }
+      return
+    }
+    if (event.key === 'ArrowLeft' && row) {
+      event.preventDefault()
+      if (row.kind === 'folder' && row.open && !String(query || '').trim()) {
+        toggleFolder(row.path)
+        return
+      }
+      for (let index = (focusedIndex ?? 0) - 1; index >= 0; index -= 1) {
+        if (rows[index].kind === 'folder' && rows[index].depth < row.depth) {
+          setFocusedIndex(index)
+          return
+        }
+      }
+      return
+    }
     if (event.key === 'ArrowDown') {
       event.preventDefault()
       setFocusedIndex(index => Math.min((index ?? -1) + 1, rows.length - 1))
@@ -269,10 +311,14 @@ export const LibraryTable = ({ items = [], query = '', highlightItem, onItemClic
                             {
                               column.id === 'name' && (
                                 <span className='LibraryTable-name' style={{ paddingLeft: `${row.depth * 16}px` }}>
-                                  <span className='LibraryTable-caret'>{row.open ? '▼' : '▶'}</span>
-                                  {row.name}
+                                  <span className={`LibraryTable-disclosure${row.open ? ' is-open' : ''}`} aria-hidden='true'>▶</span>
+                                  <FolderIcon />
+                                  <span className='LibraryTable-label'>{row.name}</span>
                                 </span>
                               )
+                            }
+                            {
+                              column.id !== 'name' && folderCell(column.id, row.count)
                             }
                           </td>
                         ))
@@ -304,11 +350,21 @@ export const LibraryTable = ({ items = [], query = '', highlightItem, onItemClic
                   >
                     {
                       columns.map(column => (
-                        <td key={column.id} className='LibraryTable-cell' title={column.id === 'name' ? libraryPath(item) : undefined}>
+                        <td
+                          key={column.id}
+                          className='LibraryTable-cell'
+                          title={column.id === 'name' ? libraryPath(item) : (column.id === 'duration' ? formatExactSeconds(item?.scanner?.duration) : undefined)}
+                        >
                           {
                             column.id === 'name' && (
-                              <span className='LibraryTable-name' style={{ paddingLeft: `${row.depth * 16}px` }}>
-                                {cellText(item, column.id)}
+                              <span className='LibraryTable-name' style={{ paddingLeft: `${row.depth * 16}px` }} title={libraryPath(item)}>
+                                <span className='LibraryTable-disclosure LibraryTable-disclosure--spacer' aria-hidden='true' />
+                                {
+                                  showThumb && item?.scanner?.thumbnail
+                                    ? <img className='LibraryTable-thumb' alt='' src={item.scanner.thumbnail} />
+                                    : <FileIcon />
+                                }
+                                <span className='LibraryTable-label'>{cellText(item, column.id)}</span>
                               </span>
                             )
                           }

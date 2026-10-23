@@ -1,4 +1,4 @@
-import { formatDuration, formatFrameRate } from './mediaInfo.js'
+import { formatFrameRate, formatTimecode } from './mediaInfo.js'
 
 export const LIBRARY_COLUMNS = [
   { id: 'thumbnail', label: 'Thumbnail', defaultWidth: 76, sortable: false },
@@ -24,7 +24,7 @@ export const LIBRARY_COLUMNS_STATE_PATH = 'plugins.bridge-plugin-caspar.settings
 export function defaultLayout () {
   return {
     order: [...COLUMN_IDS],
-    hidden: { path: true },
+    hidden: { path: true, thumbnail: true },
     widths: Object.fromEntries(LIBRARY_COLUMNS.map(column => [column.id, column.defaultWidth])),
     sort: { id: 'name', direction: 'asc' },
     expanded: {}
@@ -134,9 +134,21 @@ export function normalizeLayout (raw) {
  */
 export function visibleColumns (layout) {
   const byId = Object.fromEntries(LIBRARY_COLUMNS.map(column => [column.id, column]))
-  return layout.order
-    .filter(id => !layout.hidden[id])
-    .map(id => byId[id])
+  const rest = layout.order.filter(id => id !== 'name' && !layout.hidden[id])
+  return [byId.name, ...rest.map(id => byId[id])]
+}
+
+/**
+ * Summary shown on a folder row. Other columns stay empty.
+ * @param { string } columnId
+ * @param { number } count
+ * @returns { string }
+ */
+export function folderCell (columnId, count) {
+  if (columnId === 'size') {
+    return count === 1 ? '1 item' : `${count} items`
+  }
+  return ''
 }
 
 export function readLocalLayout () {
@@ -250,7 +262,7 @@ export function cellText (item, columnId) {
     if (!isMoving(item)) {
       return ''
     }
-    return formatDuration(scan?.duration) || ''
+    return formatTimecode(scan?.duration, scan?.frameRate) || ''
   }
   if (columnId === 'size') {
     return formatBytes(item?.size ?? scan?.size)
@@ -336,17 +348,51 @@ export function buildLibraryRows (items, options = {}) {
   }
 
   const rows = []
-  function walk (node, depth) {
-    const folders = [...node.folders.values()].sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }))
-    for (const folder of folders) {
-      const open = Boolean(options.forceOpen || options.expanded?.[folder.path])
-      rows.push({ kind: 'folder', path: folder.path, name: folder.name, depth, open })
-      if (open) {
-        walk(folder, depth + 1)
-      }
+  const direction = options.sort?.direction === 'desc' ? -1 : 1
+  const sortId = options.sort?.id || 'name'
+
+  function countFiles (node) {
+    let total = node.files.length
+    for (const folder of node.folders.values()) {
+      total += countFiles(folder)
     }
-    for (const item of sortLibraryItems(node.files, options.sort)) {
-      rows.push({ kind: 'file', item, depth })
+    return total
+  }
+
+  function walk (node, depth) {
+    const siblings = [
+      ...[...node.folders.values()].map(folder => ({ kind: 'folder', folder })),
+      ...node.files.map(item => ({ kind: 'file', item }))
+    ]
+    siblings.sort((a, b) => {
+      if (sortId !== 'name' && a.kind !== b.kind) {
+        return a.kind === 'folder' ? -1 : 1
+      }
+      const left = a.kind === 'folder' ? a.folder.name : sortValue(a.item, sortId)
+      const right = b.kind === 'folder' ? b.folder.name : sortValue(b.item, sortId)
+      if (typeof left === 'string' || typeof right === 'string') {
+        return String(left).localeCompare(String(right), undefined, { numeric: true }) * (sortId === 'name' ? direction : (a.kind === 'folder' ? 1 : direction))
+      }
+      return (left - right) * direction
+    })
+
+    for (const sibling of siblings) {
+      if (sibling.kind === 'folder') {
+        const open = Boolean(options.forceOpen || options.expanded?.[sibling.folder.path])
+        rows.push({
+          kind: 'folder',
+          path: sibling.folder.path,
+          name: sibling.folder.name,
+          depth,
+          open,
+          count: countFiles(sibling.folder)
+        })
+        if (open) {
+          walk(sibling.folder, depth + 1)
+        }
+      } else {
+        rows.push({ kind: 'file', item: sibling.item, depth })
+      }
     }
   }
   walk(root, 0)

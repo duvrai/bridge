@@ -20,6 +20,23 @@ const DEFAULT_VALUES = {
   }
 }
 
+/**
+ * Scanner frame_rate is frames/second. CLS stores the inverse, 1/50.
+ * @param { any } item
+ * @returns { string | undefined }
+ */
+function clipFrameRate (item) {
+  if (item?.scanner?.frameRate) {
+    return item.scanner.frameRate
+  }
+  const [numText, denText] = String(item?.framerate || '').split('/')
+  const numerator = Number(numText)
+  const denominator = Number(denText)
+  if (numerator > 0 && denominator > 0) {
+    return `${denominator}/${numerator}`
+  }
+}
+
 const ITEM_CONSTRUCTORS = [
   {
     if: item => [asset.type.still, asset.type.video, asset.type.audio].includes(item.type),
@@ -34,7 +51,8 @@ const ITEM_CONSTRUCTORS = [
             path: libraryPath(item),
             ...(DEFAULT_VALUES[item.type] || {})
           },
-          duration: asset.calculateDurationMs(item)
+          duration: asset.calculateDurationMs(item),
+          frameRate: clipFrameRate(item)
         }
       }
     }

@@ -105,9 +105,10 @@
 
 .LibraryTable-thumb {
   display: block;
-  width: 64px;
-  height: 36px;
-  object-fit: contain;
+  width: 28px;
+  height: 16px;
+  object-fit: cover;
+  flex: 0 0 28px;
   background: rgba(0, 0, 0, 0.35);
   border-radius: 2px;
 }
@@ -118,16 +119,40 @@
 
 .LibraryTable-row--folder {
   cursor: pointer;
-  font-weight: 600;
 }
 
 .LibraryTable-name {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
+  min-width: 0;
 }
 
-.LibraryTable-caret {
-  width: 1em;
-  opacity: 0.7;
+.LibraryTable-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.LibraryTable-disclosure {
+  width: 12px;
+  flex: 0 0 12px;
+  font-size: 9px;
+  line-height: 1;
+  opacity: 0.75;
+  transform-origin: center;
+}
+
+.LibraryTable-disclosure.is-open {
+  transform: rotate(90deg);
+}
+
+.LibraryTable-disclosure--spacer {
+  visibility: hidden;
+}
+
+.LibraryTable-folderIcon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
 }
