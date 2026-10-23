@@ -115,3 +115,19 @@
 .LibraryTable-thumb--empty {
   display: inline-block;
 }
+
+.LibraryTable-row--folder {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.LibraryTable-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.LibraryTable-caret {
+  width: 1em;
+  opacity: 0.7;
+}

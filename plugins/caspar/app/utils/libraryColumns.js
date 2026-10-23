@@ -3,6 +3,7 @@ import { formatDuration, formatFrameRate } from './mediaInfo.js'
 export const LIBRARY_COLUMNS = [
   { id: 'thumbnail', label: 'Thumbnail', defaultWidth: 76, sortable: false },
   { id: 'name', label: 'Name', defaultWidth: 280, sortable: true },
+  { id: 'path', label: 'Path', defaultWidth: 240, sortable: true },
   { id: 'type', label: 'Type', defaultWidth: 96, sortable: true },
   { id: 'resolution', label: 'Resolution', defaultWidth: 120, sortable: true },
   { id: 'framerate', label: 'Frame rate', defaultWidth: 110, sortable: true },
@@ -23,10 +24,54 @@ export const LIBRARY_COLUMNS_STATE_PATH = 'plugins.bridge-plugin-caspar.settings
 export function defaultLayout () {
   return {
     order: [...COLUMN_IDS],
-    hidden: {},
+    hidden: { path: true },
     widths: Object.fromEntries(LIBRARY_COLUMNS.map(column => [column.id, column.defaultWidth])),
-    sort: { id: 'name', direction: 'asc' }
+    sort: { id: 'name', direction: 'asc' },
+    expanded: {}
   }
+}
+
+/**
+ * File name without the Caspar folder prefix.
+ * @param { string } path
+ * @returns { string }
+ */
+export function baseName (path) {
+  const parts = String(path || '').split('/').filter(part => part.length > 0)
+  return parts[parts.length - 1] || ''
+}
+
+/**
+ * Filesystem path from the scanner, without the leading media folder.
+ * Keeps the original case, spaces, accents and extension.
+ * @param { string | undefined } filePath
+ * @returns { string }
+ */
+export function scannerDisplayPath (filePath) {
+  const text = String(filePath || '').replace(/\\/g, '/')
+  if (text.startsWith('media/')) {
+    return text.slice('media/'.length)
+  }
+  return text
+}
+
+/**
+ * Caspar id for a scanner row. The installed scanner puts that id in `name`.
+ * @param { { id?: string, name?: string } | undefined } entry
+ * @returns { string }
+ */
+export function scannerCasparId (entry) {
+  return entry?.id || entry?.name || ''
+}
+
+/**
+ * Path used for the tree and the visible file name.
+ * Falls back to the CLS name when the scanner has no row.
+ * @param { any } item
+ * @returns { string }
+ */
+export function libraryPath (item) {
+  return item?.displayPath || item?.name || ''
 }
 
 /**
@@ -54,7 +99,20 @@ export function normalizeLayout (raw) {
       hidden[id] = false
       continue
     }
-    hidden[id] = Boolean(raw?.hidden?.[id])
+    if (raw?.hidden?.[id] === undefined) {
+      hidden[id] = Boolean(base.hidden[id])
+      continue
+    }
+    hidden[id] = Boolean(raw.hidden[id])
+  }
+
+  const expanded = {}
+  if (raw?.expanded && typeof raw.expanded === 'object') {
+    for (const [path, open] of Object.entries(raw.expanded)) {
+      if (path) {
+        expanded[path] = Boolean(open)
+      }
+    }
   }
 
   const widths = { ...base.widths }
@@ -68,7 +126,7 @@ export function normalizeLayout (raw) {
   const sortId = COLUMN_IDS.includes(raw?.sort?.id) ? raw.sort.id : 'name'
   const direction = raw?.sort?.direction === 'desc' ? 'desc' : 'asc'
 
-  return { order, hidden, widths, sort: { id: sortId, direction } }
+  return { order, hidden, widths, sort: { id: sortId, direction }, expanded }
 }
 
 /**
@@ -167,7 +225,10 @@ export function formatItemDate (item) {
 export function cellText (item, columnId) {
   const scan = item?.scanner
   if (columnId === 'name') {
-    return item?.name || ''
+    return baseName(libraryPath(item))
+  }
+  if (columnId === 'path') {
+    return libraryPath(item)
   }
   if (columnId === 'type') {
     return item?.type || ''
@@ -207,7 +268,7 @@ export function cellText (item, columnId) {
  */
 export function sortValue (item, columnId) {
   const scan = item?.scanner
-  if (columnId === 'name' || columnId === 'type') {
+  if (columnId === 'name' || columnId === 'type' || columnId === 'path') {
     return String(cellText(item, columnId)).toLowerCase()
   }
   if (columnId === 'resolution') {
@@ -247,4 +308,47 @@ export function sortLibraryItems (items, sort) {
     }
     return (left - right) * direction
   })
+}
+
+/**
+ * Turn flat Caspar paths into folder and file rows.
+ * A search passes only the matching files and sets forceOpen,
+ * so matches in closed folders stay visible.
+ * @param { any[] } items
+ * @param {{ expanded?: Record<string, boolean>, sort?: { id: string, direction: 'asc' | 'desc' }, forceOpen?: boolean }} options
+ */
+export function buildLibraryRows (items, options = {}) {
+  const root = { folders: new Map(), files: [] }
+  for (const item of items) {
+    const parts = libraryPath(item).split('/').filter(part => part.length > 0)
+    if (parts.length === 0) {
+      continue
+    }
+    let node = root
+    for (let index = 0; index < parts.length - 1; index += 1) {
+      const path = parts.slice(0, index + 1).join('/')
+      if (!node.folders.has(path)) {
+        node.folders.set(path, { path, name: parts[index], folders: new Map(), files: [] })
+      }
+      node = node.folders.get(path)
+    }
+    node.files.push(item)
+  }
+
+  const rows = []
+  function walk (node, depth) {
+    const folders = [...node.folders.values()].sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }))
+    for (const folder of folders) {
+      const open = Boolean(options.forceOpen || options.expanded?.[folder.path])
+      rows.push({ kind: 'folder', path: folder.path, name: folder.name, depth, open })
+      if (open) {
+        walk(folder, depth + 1)
+      }
+    }
+    for (const item of sortLibraryItems(node.files, options.sort)) {
+      rows.push({ kind: 'file', item, depth })
+    }
+  }
+  walk(root, 0)
+  return rows
 }

@@ -8,11 +8,12 @@ import { constructPlayableItemInit } from '../../utils/libraryItem.js'
 import {
   LIBRARY_COLUMNS,
   LIBRARY_COLUMNS_STATE_PATH,
+  buildLibraryRows,
   cellText,
   defaultLayout,
+  libraryPath,
   normalizeLayout,
   readLocalLayout,
-  sortLibraryItems,
   visibleColumns,
   writeLocalLayout
 } from '../../utils/libraryColumns.js'
@@ -25,7 +26,7 @@ function persistLayout (layout) {
   bridge.state.apply(LIBRARY_COLUMNS_STATE_PATH, layout)
 }
 
-export const LibraryTable = ({ items = [], highlightItem, onItemClick, onItemDoubleClick }) => {
+export const LibraryTable = ({ items = [], query = '', highlightItem, onItemClick, onItemDoubleClick }) => {
   const [layout, setLayout] = React.useState(() => normalizeLayout(readLocalLayout()))
   const [columnsOpen, setColumnsOpen] = React.useState(false)
   const [focusedIndex, setFocusedIndex] = React.useState(null)
@@ -85,6 +86,18 @@ export const LibraryTable = ({ items = [], highlightItem, onItemClick, onItemDou
     })
   }
 
+  function toggleFolder (path) {
+    updateLayout(current => {
+      return {
+        ...current,
+        expanded: {
+          ...current.expanded,
+          [path]: !current.expanded?.[path]
+        }
+      }
+    })
+  }
+
   function toggleSort (id) {
     const column = LIBRARY_COLUMNS.find(entry => entry.id === id)
     if (!column?.sortable) {
@@ -125,7 +138,11 @@ export const LibraryTable = ({ items = [], highlightItem, onItemClick, onItemDou
   }
 
   const columns = visibleColumns(layout)
-  const rows = sortLibraryItems(items, layout.sort)
+  const rows = buildLibraryRows(items, {
+    expanded: layout.expanded,
+    sort: layout.sort,
+    forceOpen: Boolean(String(query || '').trim())
+  })
 
   function playable (item) {
     return constructPlayableItemInit(item)
@@ -140,7 +157,12 @@ export const LibraryTable = ({ items = [], highlightItem, onItemClick, onItemDou
       setFocusedIndex(index => Math.max((index ?? rows.length) - 1, 0))
     } else if (event.key === 'Enter' && focusedIndex != null) {
       event.preventDefault()
-      onItemClick?.(playable(rows[focusedIndex]))
+      const row = rows[focusedIndex]
+      if (row?.kind === 'folder') {
+        toggleFolder(row.path)
+        return
+      }
+      onItemClick?.(playable(row?.item))
     }
   }
 
@@ -230,7 +252,36 @@ export const LibraryTable = ({ items = [], highlightItem, onItemClick, onItemDou
           </thead>
           <tbody>
             {
-              rows.map((item, index) => {
+              rows.map((row, index) => {
+                if (row.kind === 'folder') {
+                  return (
+                    <tr
+                      key={`folder:${row.path}`}
+                      className={`LibraryTable-row LibraryTable-row--folder${index === focusedIndex ? ' is-focused' : ''}`}
+                      onClick={() => {
+                        setFocusedIndex(index)
+                        toggleFolder(row.path)
+                      }}
+                    >
+                      {
+                        columns.map(column => (
+                          <td key={column.id} className='LibraryTable-cell'>
+                            {
+                              column.id === 'name' && (
+                                <span className='LibraryTable-name' style={{ paddingLeft: `${row.depth * 16}px` }}>
+                                  <span className='LibraryTable-caret'>{row.open ? '▼' : '▶'}</span>
+                                  {row.name}
+                                </span>
+                              )
+                            }
+                          </td>
+                        ))
+                      }
+                    </tr>
+                  )
+                }
+
+                const item = row.item
                 const highlighted = highlightItem && item.name === highlightItem
                 const showThumb = item?.type === asset.type.still || item?.type === asset.type.video
                 return (
@@ -253,15 +304,23 @@ export const LibraryTable = ({ items = [], highlightItem, onItemClick, onItemDou
                   >
                     {
                       columns.map(column => (
-                        <td key={column.id} className='LibraryTable-cell' title={column.id === 'name' ? item.name : undefined}>
+                        <td key={column.id} className='LibraryTable-cell' title={column.id === 'name' ? libraryPath(item) : undefined}>
                           {
-                            column.id === 'thumbnail'
-                              ? (
-                                showThumb && item?.scanner?.thumbnail
-                                  ? <img className='LibraryTable-thumb' alt='' src={item.scanner.thumbnail} />
-                                  : <span className='LibraryTable-thumb LibraryTable-thumb--empty' />
-                                )
-                              : cellText(item, column.id)
+                            column.id === 'name' && (
+                              <span className='LibraryTable-name' style={{ paddingLeft: `${row.depth * 16}px` }}>
+                                {cellText(item, column.id)}
+                              </span>
+                            )
+                          }
+                          {
+                            column.id === 'thumbnail' && (
+                              showThumb && item?.scanner?.thumbnail
+                                ? <img className='LibraryTable-thumb' alt='' src={item.scanner.thumbnail} />
+                                : <span className='LibraryTable-thumb LibraryTable-thumb--empty' />
+                            )
+                          }
+                          {
+                            column.id !== 'name' && column.id !== 'thumbnail' && cellText(item, column.id)
                           }
                         </td>
                       ))

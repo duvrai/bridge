@@ -173,7 +173,7 @@ export function RundownItem ({ index, icon, item, dropzone, onDrop = () => {} })
                 </div>
               )
             }
-            <div className='RundownItem-name'>
+            <div className='RundownItem-name' title={item?.data?.caspar?.path || item?.data?.caspar?.target || name}>
               {name}
             </div>
             {

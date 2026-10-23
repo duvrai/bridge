@@ -84,7 +84,13 @@ function describeEntry (entry, thumbnail) {
   const size = Number(entry?.size)
   const time = Number(entry?.time)
   return {
+    /*
+    This scanner exposes the Caspar id as `name` (the :id used by
+    /media/info and /thumbnail). A future build may send `id` as well.
+    */
+    casparId: entry?.id || entry?.name,
     name: entry?.name,
+    path: entry?.path,
     width: stream?.width,
     height: stream?.height,
     frameRate: stream?.frame_rate,
@@ -112,9 +118,10 @@ async function listMedia (host) {
 
   return mapPool(entries, THUMBNAIL_CONCURRENCY, async entry => {
     let thumbnail
-    if (entry?.name) {
+    const casparId = entry?.id || entry?.name
+    if (casparId) {
       try {
-        const png = await getBuffer(`${base}/media/thumbnail/${encodeURIComponent(entry.name)}`)
+        const png = await getBuffer(`${base}/media/thumbnail/${encodeURIComponent(casparId)}`)
         thumbnail = `data:image/png;base64,${png.toString('base64')}`
       } catch {
         thumbnail = undefined

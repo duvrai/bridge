@@ -1,4 +1,5 @@
 import * as asset from './asset.js'
+import { baseName, libraryPath } from './libraryColumns.js'
 
 const DEFAULT_VALUES = {
   [asset.type.still]: {
@@ -26,10 +27,11 @@ const ITEM_CONSTRUCTORS = [
       return {
         type: 'bridge.caspar.media',
         data: {
-          name: item.name,
+          name: baseName(libraryPath(item)),
           caspar: {
             server: item?._filter?.serverId,
             target: item.name,
+            path: libraryPath(item),
             ...(DEFAULT_VALUES[item.type] || {})
           },
           duration: asset.calculateDurationMs(item)
@@ -43,10 +45,11 @@ const ITEM_CONSTRUCTORS = [
       return {
         type: 'bridge.caspar.template',
         data: {
-          name: item.name,
+          name: baseName(libraryPath(item)),
           caspar: {
             server: item?._filter?.serverId,
             target: item.name,
+            path: libraryPath(item),
             ...(DEFAULT_VALUES[item.type] || {})
           }
         }

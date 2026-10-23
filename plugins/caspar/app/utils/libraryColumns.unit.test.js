@@ -1,4 +1,5 @@
-import { cellText, formatBytes, normalizeLayout, sortLibraryItems, visibleColumns } from './libraryColumns.js'
+import { buildLibraryRows, cellText, formatBytes, normalizeLayout, scannerDisplayPath, sortLibraryItems, visibleColumns } from './libraryColumns.js'
+import { constructPlayableItemInit } from './libraryItem.js'
 
 test('normalizeLayout keeps name visible and fills missing columns', () => {
   const layout = normalizeLayout({
@@ -39,6 +40,53 @@ test('cellText formats a 1080p50 movie and leaves a still without duration', () 
   expect(cellText(still, 'resolution')).toEqual('1250×1250')
   expect(cellText(still, 'framerate')).toEqual('')
   expect(cellText(still, 'duration')).toEqual('')
+})
+
+test('tree uses the scanner path, keeps case and extension, and PLAY keeps the CLS id', () => {
+  const cellen = {
+    name: '20261008 VIB/CELLEN04',
+    type: 'VIDEO',
+    displayPath: scannerDisplayPath('media/20261008 VIB/cellen04.mp4')
+  }
+  const cathedral = {
+    name: '00ANTWERPEN/KATHEDRAAL STEUN',
+    type: 'VIDEO',
+    displayPath: scannerDisplayPath('media/00antwerpen/Kathedraal steun.mov')
+  }
+  const dash = {
+    name: '20261008 VIB/VIDEO/IMPACT STORY 1 – VIDEO 2 – DATA CORE AI STUDIO- V005 NO WHITE',
+    type: 'VIDEO',
+    displayPath: scannerDisplayPath('media/20261008 VIB/Video/Impact story 1 – Video 2 – Data Core AI Studio- V005 no white.mp4')
+  }
+  const upper = { name: 'DIR/FILE', type: 'VIDEO', displayPath: 'Dir/File.mp4' }
+  const lower = { name: 'DIR/OTHER', type: 'VIDEO', displayPath: 'dir/File.mov' }
+
+  const rows = buildLibraryRows([cellen, cathedral, dash, upper, lower], { forceOpen: true })
+  const folders = rows.filter(row => row.kind === 'folder').map(row => row.path)
+  expect(folders).toContain('20261008 VIB')
+  expect(folders).toContain('20261008 VIB/Video')
+  expect(folders).toContain('00antwerpen')
+  expect(folders).toContain('Dir')
+  expect(folders).toContain('dir')
+  expect(folders).not.toContain('20261008 VIB/VIDEO')
+
+  expect(cellText(cellen, 'name')).toEqual('cellen04.mp4')
+  expect(cellText(cathedral, 'name')).toEqual('Kathedraal steun.mov')
+  expect(cellText(dash, 'name')).toEqual('Impact story 1 – Video 2 – Data Core AI Studio- V005 no white.mp4')
+  expect(cellText(upper, 'name')).toEqual('File.mp4')
+  expect(cellText(lower, 'name')).toEqual('File.mov')
+
+  const closed = buildLibraryRows([cellen], { expanded: {} })
+  expect(closed.some(row => row.kind === 'file')).toEqual(false)
+
+  const fallback = { name: '20261008 VIB/CELLEN04', type: 'VIDEO' }
+  expect(cellText(fallback, 'name')).toEqual('CELLEN04')
+  expect(cellText(fallback, 'path')).toEqual('20261008 VIB/CELLEN04')
+
+  const playable = constructPlayableItemInit({ ...cellen, _filter: { serverId: 'server-1' } })
+  expect(playable.data.name).toEqual('cellen04.mp4')
+  expect(playable.data.caspar.target).toEqual('20261008 VIB/CELLEN04')
+  expect(playable.data.caspar.path).toEqual('20261008 VIB/cellen04.mp4')
 })
 
 test('sortLibraryItems orders by duration descending', () => {
