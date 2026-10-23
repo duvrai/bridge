@@ -54,10 +54,11 @@
   z-index: 4;
   text-align: left;
   background-color: var(--base-color--background1);
+  background-clip: border-box;
   border-bottom: 1px solid var(--base-color--shade1);
-  box-shadow: 0 1px 0 var(--base-color--background1);
   padding: 0;
   font-weight: 600;
+  color: var(--base-color);
 }
 
 .LibraryTable-headLabel {
@@ -70,7 +71,7 @@
   text-overflow: ellipsis;
 }
 
-.LibraryTable-head.is-sorted .LibraryTable-headLabel {
+.LibraryTable-sortMark {
   color: var(--base-color--accent1);
 }
 
