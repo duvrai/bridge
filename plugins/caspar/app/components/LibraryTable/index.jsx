@@ -6,7 +6,7 @@ import './style.css'
 function FolderIcon () {
   return (
     <svg className='LibraryTable-folderIcon' viewBox='0 0 16 16' aria-hidden='true'>
-      <path fill='#5aa6e6' d='M1.2 3.2h4.6l1.3 1.4h7.7v8.2H1.2V3.2z' />
+      <path fill='currentColor' d='M1.2 3.2h4.6l1.3 1.4h7.7v8.2H1.2V3.2z' />
     </svg>
   )
 }
@@ -14,7 +14,7 @@ function FolderIcon () {
 function FileIcon () {
   return (
     <svg className='LibraryTable-folderIcon' viewBox='0 0 16 16' aria-hidden='true'>
-      <path fill='#9aa0a6' d='M3 1.5h6.2L13 5.3V14.5H3V1.5zm6 1.2V6h3.3' />
+      <path fill='currentColor' d='M3 1.5h6.2L13 5.3V14.5H3V1.5zm6 1.2V6h3.3' />
     </svg>
   )
 }

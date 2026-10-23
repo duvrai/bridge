@@ -194,17 +194,30 @@ export function RundownItem ({ index, icon, item, dropzone, onDrop = () => {} })
             {
               mediaLabel && (
                 <div className='RundownItem-facts'>
-                  <span className='RundownItem-fact RundownItem-fact--id' title={item?.id}>ID {item?.id}</span>
-                  <span className='RundownItem-fact RundownItem-fact--channel'>CH {item?.data?.caspar?.channel}</span>
-                  <span className='RundownItem-fact RundownItem-fact--layer'>L {item?.data?.caspar?.layer}</span>
+                  <span className='RundownItem-fact RundownItem-fact--id' title={item?.id}>
+                    <span className='RundownItem-factLabel'>ID</span>
+                    <span className='RundownItem-factValue'>{item?.id}</span>
+                  </span>
+                  <span className='RundownItem-fact RundownItem-fact--channel'>
+                    <span className='RundownItem-factLabel'>CH</span>
+                    <span className='RundownItem-factValue'>{item?.data?.caspar?.channel}</span>
+                  </span>
+                  <span className='RundownItem-fact RundownItem-fact--layer'>
+                    <span className='RundownItem-factLabel'>L</span>
+                    <span className='RundownItem-factValue'>{item?.data?.caspar?.layer}</span>
+                  </span>
                   {
                     mediaLabel.picture && (
-                      <span className='RundownItem-fact RundownItem-fact--raster' title={mediaLabel.pictureTitle}>{mediaLabel.picture}</span>
+                      <span className='RundownItem-fact RundownItem-fact--raster' title={mediaLabel.pictureTitle}>
+                        <span className='RundownItem-factValue'>{mediaLabel.picture}</span>
+                      </span>
                     )
                   }
                   {
                     mediaLabel.timecode && (
-                      <span className='RundownItem-fact RundownItem-fact--duration' title={mediaLabel.secondsTitle}>{mediaLabel.timecode}</span>
+                      <span className='RundownItem-fact RundownItem-fact--duration' title={mediaLabel.secondsTitle}>
+                        <span className='RundownItem-factValue'>{mediaLabel.timecode}</span>
+                      </span>
                     )
                   }
                 </div>

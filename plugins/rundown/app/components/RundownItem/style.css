@@ -100,46 +100,48 @@
 .RundownItem-facts {
   display: flex;
   flex: 0 0 auto;
-  align-items: center;
-  margin-left: 8px;
+  align-items: baseline;
+  gap: 10px;
+  margin-left: 12px;
   color: var(--base-color--shade4);
   font-size: 0.85em;
-  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
 .RundownItem-fact {
+  display: inline-flex;
   flex: 0 0 auto;
-  box-sizing: border-box;
-  padding: 0 8px;
-  border-left: 1px solid var(--base-color--shade1);
+  align-items: baseline;
+  gap: 4px;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  text-align: right;
 }
 
-.RundownItem-fact:first-child {
-  border-left: 0;
+.RundownItem-factLabel {
+  font-size: 0.72em;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+
+.RundownItem-factValue {
+  color: var(--base-color--shade4);
+}
+
+.RundownItem-fact--duration .RundownItem-factValue {
+  font-variant-numeric: tabular-nums;
 }
 
 .RundownItem-fact--id {
-  flex: 0 1 7rem;
-  max-width: 7rem;
-  text-align: left;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 9rem;
+  overflow: hidden;
 }
 
-.RundownItem-fact--channel,
-.RundownItem-fact--layer {
-  width: 3rem;
-}
-
-.RundownItem-fact--raster {
-  width: 6.6rem;
-}
-
-.RundownItem-fact--duration {
-  width: 8.2rem;
+.RundownItem-fact--id .RundownItem-factValue {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 @container (max-width: 560px) {
