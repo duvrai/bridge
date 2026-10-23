@@ -1,6 +1,14 @@
 import { buildLibraryRows, cellText, formatBytes, normalizeLayout, scannerDisplayPath, sortLibraryItems, visibleColumns } from './libraryColumns.js'
 import { constructPlayableItemInit } from './libraryItem.js'
 
+test('a fresh layout shows only name, resolution and duration', () => {
+  expect(visibleColumns(normalizeLayout(undefined)).map(column => column.id)).toEqual(['name', 'resolution', 'duration'])
+  const saved = normalizeLayout({ hidden: { type: false, resolution: true } })
+  expect(saved.hidden.type).toEqual(false)
+  expect(saved.hidden.resolution).toEqual(true)
+  expect(visibleColumns(saved).map(column => column.id)).toEqual(['name', 'duration'])
+})
+
 test('normalizeLayout keeps name visible and fills missing columns', () => {
   const layout = normalizeLayout({
     order: ['date', 'name'],
@@ -12,7 +20,7 @@ test('normalizeLayout keeps name visible and fills missing columns', () => {
   expect(layout.hidden.type).toEqual(true)
   expect(layout.order[0]).toEqual('date')
   expect(layout.order).toContain('thumbnail')
-  expect(layout.widths.name).toEqual(48)
+  expect(layout.widths.name).toEqual(72)
   expect(layout.widths.date).toEqual(800)
   expect(layout.sort).toEqual({ id: 'name', direction: 'desc' })
   expect(visibleColumns(layout).some(column => column.id === 'type')).toEqual(false)

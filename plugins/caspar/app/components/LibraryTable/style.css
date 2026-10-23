@@ -44,7 +44,6 @@
   border-collapse: collapse;
   table-layout: fixed;
   width: max-content;
-  min-width: 100%;
   font-size: 0.9em;
 }
 
@@ -83,6 +82,7 @@
 }
 
 .LibraryTable-cell {
+  max-width: 0;
   padding: 4px 8px;
   white-space: nowrap;
   overflow: hidden;
@@ -129,6 +129,8 @@
 }
 
 .LibraryTable-label {
+  flex: 1 1 auto;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

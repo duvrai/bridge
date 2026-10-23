@@ -1,20 +1,29 @@
 import { exactFps, formatFrameRate, formatRaster, formatTimecode } from './mediaInfo.js'
 
 export const LIBRARY_COLUMNS = [
-  { id: 'thumbnail', label: 'Thumbnail', defaultWidth: 76, sortable: false },
-  { id: 'name', label: 'Name', defaultWidth: 280, sortable: true },
-  { id: 'path', label: 'Path', defaultWidth: 240, sortable: true },
-  { id: 'type', label: 'Type', defaultWidth: 96, sortable: true },
-  { id: 'resolution', label: 'Resolution', defaultWidth: 120, sortable: true },
-  { id: 'framerate', label: 'Frame rate', defaultWidth: 110, sortable: true },
-  { id: 'duration', label: 'Duration', defaultWidth: 96, sortable: true },
-  { id: 'size', label: 'Size', defaultWidth: 96, sortable: true },
-  { id: 'date', label: 'Date', defaultWidth: 150, sortable: true }
+  { id: 'thumbnail', label: 'Thumbnail', defaultWidth: 76, minWidth: 40, sortable: false },
+  { id: 'name', label: 'Name', defaultWidth: 280, minWidth: 72, sortable: true },
+  { id: 'path', label: 'Path', defaultWidth: 240, minWidth: 48, sortable: true },
+  { id: 'type', label: 'Type', defaultWidth: 96, minWidth: 40, sortable: true },
+  { id: 'resolution', label: 'Resolution', defaultWidth: 120, minWidth: 48, sortable: true },
+  { id: 'framerate', label: 'Frame rate', defaultWidth: 110, minWidth: 36, sortable: true },
+  { id: 'duration', label: 'Duration', defaultWidth: 110, minWidth: 56, sortable: true },
+  { id: 'size', label: 'Size', defaultWidth: 96, minWidth: 40, sortable: true },
+  { id: 'date', label: 'Date', defaultWidth: 150, minWidth: 56, sortable: true }
 ]
 
 const COLUMN_IDS = LIBRARY_COLUMNS.map(column => column.id)
-const MIN_WIDTH = 48
 const MAX_WIDTH = 800
+
+/**
+ * Narrower than the usual text, still wide enough that the column stays visible.
+ * The name column also keeps the disclosure triangle and the icon.
+ * @param { string } id
+ * @returns { number }
+ */
+export function columnMinWidth (id) {
+  return LIBRARY_COLUMNS.find(column => column.id === id)?.minWidth || 36
+}
 const STORAGE_KEY = 'bridge-plugin-caspar.libraryColumns'
 export const LIBRARY_COLUMNS_STATE_PATH = 'plugins.bridge-plugin-caspar.settings.libraryColumns'
 
@@ -24,7 +33,14 @@ export const LIBRARY_COLUMNS_STATE_PATH = 'plugins.bridge-plugin-caspar.settings
 export function defaultLayout () {
   return {
     order: [...COLUMN_IDS],
-    hidden: { path: true, thumbnail: true },
+    hidden: {
+      thumbnail: true,
+      path: true,
+      type: true,
+      framerate: true,
+      size: true,
+      date: true
+    },
     widths: Object.fromEntries(LIBRARY_COLUMNS.map(column => [column.id, column.defaultWidth])),
     sort: { id: 'name', direction: 'asc' },
     expanded: {}
@@ -119,7 +135,7 @@ export function normalizeLayout (raw) {
   for (const id of COLUMN_IDS) {
     const width = Number(raw?.widths?.[id])
     if (Number.isFinite(width)) {
-      widths[id] = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, Math.round(width)))
+      widths[id] = Math.min(MAX_WIDTH, Math.max(columnMinWidth(id), Math.round(width)))
     }
   }
 

@@ -27,6 +27,7 @@ import {
   LIBRARY_COLUMNS_STATE_PATH,
   buildLibraryRows,
   cellText,
+  columnMinWidth,
   defaultLayout,
   folderCell,
   libraryPath,
@@ -134,7 +135,7 @@ export const LibraryTable = ({ items = [], query = '', highlightItem, onItemClic
     const startWidth = layoutRef.current.widths[id]
 
     function move (moveEvent) {
-      const width = Math.round(startWidth + moveEvent.clientX - startX)
+      const width = Math.max(columnMinWidth(id), Math.round(startWidth + moveEvent.clientX - startX))
       setLayout(current => {
         const next = normalizeLayout({
           ...current,
@@ -164,6 +165,19 @@ export const LibraryTable = ({ items = [], query = '', highlightItem, onItemClic
 
   function playable (item) {
     return constructPlayableItemInit(item)
+  }
+
+  function cellTitle (item, columnId) {
+    if (columnId === 'name') {
+      return libraryPath(item) || undefined
+    }
+    if (columnId === 'duration') {
+      return formatExactSeconds(item?.scanner?.duration) || undefined
+    }
+    if (columnId === 'resolution' || columnId === 'framerate') {
+      return formatRasterTooltip(item?.scanner?.width, item?.scanner?.height, item?.scanner?.frameRate) || undefined
+    }
+    return cellText(item, columnId) || undefined
   }
 
   function handleKeyDown (event) {
@@ -247,7 +261,10 @@ export const LibraryTable = ({ items = [], query = '', highlightItem, onItemClic
         tabIndex={0}
         onKeyDown={handleKeyDown}
       >
-        <table className='LibraryTable-table'>
+        <table
+          className='LibraryTable-table'
+          style={{ width: columns.reduce((sum, column) => sum + layout.widths[column.id], 0) }}
+        >
           <colgroup>
             {
               columns.map(column => (
@@ -307,7 +324,7 @@ export const LibraryTable = ({ items = [], query = '', highlightItem, onItemClic
                     >
                       {
                         columns.map(column => (
-                          <td key={column.id} className='LibraryTable-cell'>
+                          <td key={column.id} className='LibraryTable-cell' title={column.id === 'name' ? row.path : (folderCell(column.id, row.count) || undefined)}>
                             {
                               column.id === 'name' && (
                                 <span className='LibraryTable-name' style={{ paddingLeft: `${row.depth * 16}px` }}>
@@ -353,19 +370,11 @@ export const LibraryTable = ({ items = [], query = '', highlightItem, onItemClic
                         <td
                           key={column.id}
                           className='LibraryTable-cell'
-                          title={
-                            column.id === 'name'
-                              ? libraryPath(item)
-                              : (column.id === 'duration'
-                                ? formatExactSeconds(item?.scanner?.duration)
-                                : (column.id === 'resolution' || column.id === 'framerate'
-                                  ? formatRasterTooltip(item?.scanner?.width, item?.scanner?.height, item?.scanner?.frameRate)
-                                  : undefined))
-                          }
+                          title={cellTitle(item, column.id)}
                         >
                           {
                             column.id === 'name' && (
-                              <span className='LibraryTable-name' style={{ paddingLeft: `${row.depth * 16}px` }} title={libraryPath(item)}>
+                              <span className='LibraryTable-name' style={{ paddingLeft: `${row.depth * 16}px` }}>
                                 <span className='LibraryTable-disclosure LibraryTable-disclosure--spacer' aria-hidden='true' />
                                 {
                                   showThumb && item?.scanner?.thumbnail

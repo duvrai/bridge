@@ -33,11 +33,14 @@
 
 .RundownItem-section {
   display: flex;
-  width: 100%;
+  width: auto;
+  min-width: 0;
+  flex: 1 1 auto;
   align-items: center;
 }
 
 .RundownItem-section--right {
+  flex: 0 0 auto;
   justify-content: flex-end;
 }
 
@@ -72,7 +75,13 @@
   align-items: center;
 }
 
+.RundownItem-index,
+.RundownItem-icon {
+  flex-shrink: 0;
+}
+
 .RundownItem-name {
+  flex: 1 1 auto;
   margin-right: 10px;
   min-width: 0;
   overflow: hidden;
@@ -80,14 +89,17 @@
   white-space: nowrap;
 }
 
-.RundownItem-mediaMeta {
+.RundownItem-facts {
   display: flex;
   flex: 0 0 auto;
-  gap: 10px;
-  margin-right: 10px;
-  opacity: 0.7;
+  align-items: center;
+  gap: 12px;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
+}
+
+.RundownItem-fact {
+  white-space: nowrap;
 }
 
 .RundownItem-notes {

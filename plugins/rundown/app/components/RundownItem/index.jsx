@@ -25,20 +25,6 @@ import { RundownItemIndicatorsSection } from '../RundownItemIndicatorsSection'
 
 import * as Layout from '../Layout'
 
-function MediaName ({ item }) {
-  const label = rundownMediaLabel(item)
-  return (
-    <>
-      <div className='RundownItem-name' title={label.tooltip}>
-        {label.fileName}
-      </div>
-      <div className='RundownItem-mediaMeta' title={label.secondsTitle}>
-        {label.timecode && <span title={label.secondsTitle}>{label.timecode}</span>}
-        {label.picture && <span title={label.pictureTitle}>{label.picture}</span>}
-      </div>
-    </>
-  )
-}
 
 /**
  * An index of type properties
@@ -122,6 +108,8 @@ export function RundownItem ({ index, icon, item, dropzone, onDrop = () => {} })
     return bridge.items.renderValue(item.id, 'data.name')
   }, [item?.data?.name])
 
+  const mediaLabel = item?.type === 'bridge.caspar.media' ? rundownMediaLabel(item) : null
+
   const displaySettings = shared?.plugins?.['bridge-plugin-rundown']?.settings?.display
   const isCompact = shared?.plugins?.['bridge-plugin-rundown']?.settings?.compact
 
@@ -190,17 +178,9 @@ export function RundownItem ({ index, icon, item, dropzone, onDrop = () => {} })
                 </div>
               )
             }
-            {
-              item?.type === 'bridge.caspar.media'
-                ? (
-                  <MediaName item={item} />
-                  )
-                : (
-                  <div className='RundownItem-name' title={name}>
-                    {name}
-                  </div>
-                  )
-            }
+            <div className='RundownItem-name' title={mediaLabel ? mediaLabel.tooltip : name}>
+              {mediaLabel ? mediaLabel.fileName : name}
+            </div>
             {
               displaySettings?.notes &&
               (
@@ -212,7 +192,26 @@ export function RundownItem ({ index, icon, item, dropzone, onDrop = () => {} })
           </div>
           <div className='RundownItem-section RundownItem-section--right'>
             {
-              ([...properties, ...typeProperties])
+              mediaLabel && (
+                <div className='RundownItem-facts'>
+                  <span className='RundownItem-fact' title={item?.id}>ID {item?.id}</span>
+                  <span className='RundownItem-fact'>CH {item?.data?.caspar?.channel}</span>
+                  <span className='RundownItem-fact'>L {item?.data?.caspar?.layer}</span>
+                  {
+                    mediaLabel.picture && (
+                      <span className='RundownItem-fact' title={mediaLabel.pictureTitle}>{mediaLabel.picture}</span>
+                    )
+                  }
+                  {
+                    mediaLabel.timecode && (
+                      <span className='RundownItem-fact' title={mediaLabel.secondsTitle}>{mediaLabel.timecode}</span>
+                    )
+                  }
+                </div>
+              )
+            }
+            {
+              !mediaLabel && ([...properties, ...typeProperties])
                 .filter(property => property.if)
                 .map((property, i) => {
                   /*
