@@ -1,7 +1,7 @@
 import React from 'react'
 import bridge from 'bridge'
 
-import { formatExactSeconds, formatTimecode } from '../../../caspar/app/utils/mediaInfo.js'
+import { formatExactSeconds, formatTimecode } from '../../../../caspar/app/utils/mediaInfo.js'
 
 import './style.css'
 

@@ -11,6 +11,8 @@ import bridge from 'bridge'
 
 import objectPath from 'object-path'
 
+import { rundownMediaLabel } from '../../../../caspar/app/utils/rundownLabel.js'
+
 import './style.css'
 
 import { SharedContext } from '../../sharedContext'
@@ -22,6 +24,21 @@ import { RundownItemTimeSection } from '../RundownItemTimeSection'
 import { RundownItemIndicatorsSection } from '../RundownItemIndicatorsSection'
 
 import * as Layout from '../Layout'
+
+function MediaName ({ item }) {
+  const label = rundownMediaLabel(item)
+  return (
+    <>
+      <div className='RundownItem-name' title={label.tooltip}>
+        {label.fileName}
+      </div>
+      <div className='RundownItem-mediaMeta' title={label.secondsTitle}>
+        {label.timecode && <span>{label.timecode}</span>}
+        {label.picture && <span>{label.picture}</span>}
+      </div>
+    </>
+  )
+}
 
 /**
  * An index of type properties
@@ -173,9 +190,17 @@ export function RundownItem ({ index, icon, item, dropzone, onDrop = () => {} })
                 </div>
               )
             }
-            <div className='RundownItem-name' title={item?.data?.caspar?.path || item?.data?.caspar?.target || name}>
-              {name}
-            </div>
+            {
+              item?.type === 'bridge.caspar.media'
+                ? (
+                  <MediaName item={item} />
+                  )
+                : (
+                  <div className='RundownItem-name' title={name}>
+                    {name}
+                  </div>
+                  )
+            }
             {
               displaySettings?.notes &&
               (

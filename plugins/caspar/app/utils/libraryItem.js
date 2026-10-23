@@ -52,7 +52,10 @@ const ITEM_CONSTRUCTORS = [
             ...(DEFAULT_VALUES[item.type] || {})
           },
           duration: asset.calculateDurationMs(item),
-          frameRate: clipFrameRate(item)
+          durationSeconds: Number.isFinite(item?.scanner?.duration) ? item.scanner.duration : undefined,
+          frameRate: clipFrameRate(item),
+          width: item?.scanner?.width,
+          height: item?.scanner?.height
         }
       }
     }
