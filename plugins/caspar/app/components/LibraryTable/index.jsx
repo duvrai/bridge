@@ -21,7 +21,7 @@ function FileIcon () {
 
 import * as asset from '../../utils/asset.js'
 import { constructPlayableItemInit } from '../../utils/libraryItem.js'
-import { formatExactSeconds } from '../../utils/mediaInfo.js'
+import { formatExactSeconds, formatRasterTooltip } from '../../utils/mediaInfo.js'
 import {
   LIBRARY_COLUMNS,
   LIBRARY_COLUMNS_STATE_PATH,
@@ -353,7 +353,15 @@ export const LibraryTable = ({ items = [], query = '', highlightItem, onItemClic
                         <td
                           key={column.id}
                           className='LibraryTable-cell'
-                          title={column.id === 'name' ? libraryPath(item) : (column.id === 'duration' ? formatExactSeconds(item?.scanner?.duration) : undefined)}
+                          title={
+                            column.id === 'name'
+                              ? libraryPath(item)
+                              : (column.id === 'duration'
+                                ? formatExactSeconds(item?.scanner?.duration)
+                                : (column.id === 'resolution' || column.id === 'framerate'
+                                  ? formatRasterTooltip(item?.scanner?.width, item?.scanner?.height, item?.scanner?.frameRate)
+                                  : undefined))
+                          }
                         >
                           {
                             column.id === 'name' && (

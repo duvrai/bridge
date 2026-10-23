@@ -1,4 +1,4 @@
-import { formatExactSeconds, formatFrameRate, formatTimecode } from './mediaInfo.js'
+import { formatExactSeconds, formatRaster, formatRasterTooltip, formatTimecode } from './mediaInfo.js'
 
 /**
  * What a rundown row shows for a Caspar media item.
@@ -18,16 +18,15 @@ export function rundownMediaLabel (item) {
     ? item.data.durationSeconds
     : (Number(item?.data?.duration) > 0 ? Number(item.data.duration) / 1000 : undefined)
   const timecode = formatTimecode(seconds, item?.data?.frameRate)
-  const fps = formatFrameRate(item?.data?.frameRate)
-  const picture = item?.data?.width && item?.data?.height
-    ? `${item.data.width}×${item.data.height}${fps ? ` · ${fps}p` : ''}`
-    : (fps ? `${fps}p` : '')
+  const picture = formatRaster(item?.data?.width, item?.data?.height, item?.data?.frameRate, item?.data?.fieldOrder)
+  const pictureTitle = formatRasterTooltip(item?.data?.width, item?.data?.height, item?.data?.frameRate)
 
   return {
     fileName,
     tooltip,
     timecode,
     picture,
+    pictureTitle,
     secondsTitle: formatExactSeconds(seconds)
   }
 }

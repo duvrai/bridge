@@ -55,7 +55,8 @@ const ITEM_CONSTRUCTORS = [
           durationSeconds: Number.isFinite(item?.scanner?.duration) ? item.scanner.duration : undefined,
           frameRate: clipFrameRate(item),
           width: item?.scanner?.width,
-          height: item?.scanner?.height
+          height: item?.scanner?.height,
+          fieldOrder: item?.scanner?.fieldOrder
         }
       }
     }

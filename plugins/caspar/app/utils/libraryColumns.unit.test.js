@@ -26,8 +26,8 @@ test('cellText formats a 1080p50 movie and leaves a still without duration', () 
     timestamp: '20261007134754',
     scanner: { width: 1920, height: 1080, frameRate: '50/1', duration: 68.34, frames: 3417 }
   }
-  expect(cellText(movie, 'resolution')).toEqual('1920×1080')
-  expect(cellText(movie, 'framerate')).toEqual('50 fps')
+  expect(cellText(movie, 'resolution')).toEqual('1080p50')
+  expect(cellText(movie, 'framerate')).toEqual('50')
   expect(cellText(movie, 'duration')).toEqual('00:01:08:17')
   expect(cellText(movie, 'size')).toEqual(formatBytes(123378979))
   expect(cellText(movie, 'date')).toEqual('2026-10-07 13:47')

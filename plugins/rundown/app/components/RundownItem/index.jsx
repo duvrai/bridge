@@ -33,8 +33,8 @@ function MediaName ({ item }) {
         {label.fileName}
       </div>
       <div className='RundownItem-mediaMeta' title={label.secondsTitle}>
-        {label.timecode && <span>{label.timecode}</span>}
-        {label.picture && <span>{label.picture}</span>}
+        {label.timecode && <span title={label.secondsTitle}>{label.timecode}</span>}
+        {label.picture && <span title={label.pictureTitle}>{label.picture}</span>}
       </div>
     </>
   )

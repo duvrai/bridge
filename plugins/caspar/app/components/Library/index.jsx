@@ -7,6 +7,7 @@ import { LibraryTable } from '../LibraryTable'
 import * as asset from '../../utils/asset'
 import * as filterUtils from '../../utils/filter'
 import { libraryPath, scannerDisplayPath } from '../../utils/libraryColumns'
+import { exactFps, formatRaster } from '../../utils/mediaInfo'
 
 /**
  * Statuses that the
@@ -181,7 +182,10 @@ export const Library = ({ highlightItem, serverId, onItemClick, onItemDoubleClic
     const query = (filter?.query || '').toLowerCase()
     return (items || [])
       .filter(item => {
-        const haystack = `${libraryPath(item)} ${item.name || ''}`.toLocaleLowerCase('nl')
+        const scan = item.scanner
+        const raster = formatRaster(scan?.width, scan?.height, scan?.frameRate, scan?.fieldOrder)
+        const fps = exactFps(scan?.frameRate)
+        const haystack = `${libraryPath(item)} ${item.name || ''} ${raster} ${scan?.width || ''} ${scan?.height || ''} ${fps || ''}`.toLocaleLowerCase('nl')
         return haystack.indexOf(query.toLocaleLowerCase('nl')) >= 0
       })
       .map(item => {

@@ -1,4 +1,4 @@
-import { formatDuration, formatExactSeconds, formatFrameRate, formatScannerDetails, formatTimecode } from './mediaInfo.js'
+import { formatDuration, formatExactSeconds, formatFrameRate, formatRaster, formatRasterTooltip, formatScannerDetails, formatTimecode } from './mediaInfo.js'
 
 test('formatFrameRate reads a scanner fraction as frames per second', () => {
   expect(formatFrameRate('50/1')).toEqual('50')
@@ -21,6 +21,20 @@ test('formatDuration rounds to minutes and seconds', () => {
   expect(formatDuration(4.2)).toEqual('0:04')
   expect(formatDuration(120.02)).toEqual('2:00')
   expect(formatDuration(0)).toEqual(undefined)
+})
+
+test('formatRaster uses line names for 16:9 and pixels otherwise', () => {
+  expect(formatRaster(1920, 1080, '50/1')).toEqual('1080p50')
+  expect(formatRaster(1920, 1080, '25/1')).toEqual('1080p25')
+  expect(formatRaster(3840, 2160, '25/1')).toEqual('2160p25')
+  expect(formatRaster(1280, 720, '50/1')).toEqual('720p50')
+  expect(formatRaster(1920, 1080, '25/1', 'tt')).toEqual('1080i50')
+  expect(formatRaster(1920, 1080, '30000/1001')).toEqual('1080p29.97')
+  expect(formatRaster(1920, 1080, '60000/1001')).toEqual('1080p59.94')
+  expect(formatRaster(1080, 1920, '25/1')).toEqual('1080×1920 p25')
+  expect(formatRaster(3840, 1600, '24/1')).toEqual('3840×1600 p24')
+  expect(formatRasterTooltip(1920, 1080, '50/1')).toEqual('1920×1080 · 50 fps')
+  expect(formatRasterTooltip(1920, 1080, '30000/1001')).toEqual('1920×1080 · 29.97 fps')
 })
 
 test('formatScannerDetails shows resolution, frame rate and duration for a movie', () => {

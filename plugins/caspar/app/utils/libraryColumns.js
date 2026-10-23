@@ -1,4 +1,4 @@
-import { formatFrameRate, formatTimecode } from './mediaInfo.js'
+import { exactFps, formatFrameRate, formatRaster, formatTimecode } from './mediaInfo.js'
 
 export const LIBRARY_COLUMNS = [
   { id: 'thumbnail', label: 'Thumbnail', defaultWidth: 76, sortable: false },
@@ -249,14 +249,14 @@ export function cellText (item, columnId) {
     if (!scan?.width || !scan?.height) {
       return ''
     }
-    return `${scan.width}×${scan.height}`
+    return formatRaster(scan.width, scan.height, scan.frameRate, scan.fieldOrder)
   }
   if (columnId === 'framerate') {
     if (!isMoving(item)) {
       return ''
     }
     const fps = formatFrameRate(scan?.frameRate)
-    return fps ? `${fps} fps` : ''
+    return fps || ''
   }
   if (columnId === 'duration') {
     if (!isMoving(item)) {
@@ -284,10 +284,10 @@ export function sortValue (item, columnId) {
     return String(cellText(item, columnId)).toLowerCase()
   }
   if (columnId === 'resolution') {
-    return ((scan?.width || 0) * 100000) + (scan?.height || 0)
+    return ((scan?.height || 0) * 100000) + (scan?.width || 0)
   }
   if (columnId === 'framerate') {
-    return isMoving(item) ? frameRateNumber(scan?.frameRate) : 0
+    return isMoving(item) ? (exactFps(scan?.frameRate) || 0) : 0
   }
   if (columnId === 'duration') {
     return isMoving(item) ? Number(scan?.duration) || 0 : 0

@@ -40,6 +40,101 @@ export function formatScannerDetails (info) {
  * @param { string | undefined } fraction
  * @returns { string | undefined }
  */
+const STANDARD_HEIGHTS = new Set([720, 1080, 2160, 4320])
+
+/**
+ * @param { string | undefined } fieldOrder
+ * @returns { boolean }
+ */
+export function isInterlaced (fieldOrder) {
+  const value = String(fieldOrder || '').toLowerCase()
+  return value === 'tt' || value === 'bb' || value === 'tb' || value === 'bt' || value === 'interlaced'
+}
+
+/**
+ * Exact frames per second from a scanner fraction.
+ * @param { string | undefined } fraction
+ * @returns { number | undefined }
+ */
+export function exactFps (fraction) {
+  const [numText, denText] = String(fraction || '').split('/')
+  const numerator = Number(numText)
+  const denominator = Number(denText)
+  if (!numerator || !denominator) {
+    return
+  }
+  const fps = numerator / denominator
+  if (!Number.isFinite(fps) || fps <= 0) {
+    return
+  }
+  return fps
+}
+
+/**
+ * @param { number } fps
+ * @returns { string }
+ */
+export function rateToken (fps) {
+  if (Math.abs(fps - 23.976) < 0.01) {
+    return '23.98'
+  }
+  if (Math.abs(fps - 29.97) < 0.015) {
+    return '29.97'
+  }
+  if (Math.abs(fps - 59.94) < 0.015) {
+    return '59.94'
+  }
+  const rounded = Math.round(fps)
+  if (Math.abs(fps - rounded) < 0.01) {
+    return String(rounded)
+  }
+  return fps.toFixed(2)
+}
+
+/**
+ * Short raster name. 16:9 broadcast sizes are lines plus p/i plus rate.
+ * Interlaced rates are the field rate. Anything else keeps width×height.
+ * @param { number | undefined } width
+ * @param { number | undefined } height
+ * @param { string | undefined } fraction
+ * @param { string | undefined } fieldOrder
+ * @returns { string }
+ */
+export function formatRaster (width, height, fraction, fieldOrder) {
+  const fps = exactFps(fraction)
+  if (!width || !height || !fps) {
+    return ''
+  }
+  const interlaced = isInterlaced(fieldOrder)
+  const shown = interlaced && fps <= 30 ? fps * 2 : fps
+  const token = rateToken(shown)
+  const scan = interlaced ? 'i' : 'p'
+  const standard = STANDARD_HEIGHTS.has(height) && Math.abs(width / height - 16 / 9) < 0.015
+  if (standard) {
+    return `${height}${scan}${token}`
+  }
+  return `${width}×${height} ${scan}${token}`
+}
+
+/**
+ * Tooltip: coded width×height and the real frame rate, not the short name.
+ * @param { number | undefined } width
+ * @param { number | undefined } height
+ * @param { string | undefined } fraction
+ * @returns { string }
+ */
+export function formatRasterTooltip (width, height, fraction) {
+  const fps = exactFps(fraction)
+  if (!width || !height || !fps) {
+    return ''
+  }
+  const rounded = Math.round(fps)
+  const fpsLabel = Math.abs(fps - rounded) < 0.001
+    ? String(rounded)
+    : String(Math.round(fps * 1000) / 1000)
+  return `${width}×${height} · ${fpsLabel} fps`
+}
+
 export function formatFrameRate (fraction) {
   const [numText, denText] = String(fraction || '').split('/')
   const numerator = Number(numText)

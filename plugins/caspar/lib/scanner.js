@@ -94,6 +94,7 @@ function describeEntry (entry, thumbnail) {
     width: stream?.width,
     height: stream?.height,
     frameRate: stream?.frame_rate,
+    fieldOrder: entry?.field_order,
     duration: Number.isFinite(duration) ? duration : undefined,
     frames: Number.isFinite(frames) ? frames : undefined,
     size: Number.isFinite(size) ? size : undefined,
