@@ -2,7 +2,7 @@ import React from 'react'
 import bridge from 'bridge'
 
 import { LibraryHeader } from '../LibraryHeader'
-import { LibraryList } from '../LibraryList'
+import { LibraryTable } from '../LibraryTable'
 
 import * as asset from '../../utils/asset'
 import * as filterUtils from '../../utils/filter'
@@ -136,11 +136,24 @@ export const Library = ({ highlightItem, serverId, onItemClick, onItemDoubleClic
         }
 
         const res = await Promise.all(commands)
+        let scannerByName = {}
+        if (filterUtils.typeIncludesMedia(typeStr)) {
+          const scanned = await bridge.commands.executeCommand('caspar.scannerMedia', filter.serverId)
+          scannerByName = Object.fromEntries(
+            (scanned || []).map(row => [String(row?.name || '').toUpperCase(), row])
+          )
+        }
         const sortedAssets = res
           .flat()
           .filter(item => item)
           .sort((a, b) => String(a.name || '').localeCompare(b.name || ''))
           .filter(item => filterUtils.filterByItemType(item?.type, typeStr))
+          .map(item => {
+            return {
+              ...item,
+              scanner: scannerByName[String(item.name || '').toUpperCase()]
+            }
+          })
 
         setItems(sortedAssets)
         setStatus(STATUS.list)
@@ -211,7 +224,7 @@ export const Library = ({ highlightItem, serverId, onItemClick, onItemDoubleClic
       }
       {
         status === STATUS.list &&
-        <LibraryList
+        <LibraryTable
           items={filteredItems}
           highlightItem={highlightItem}
           onItemClick={onItemClick}

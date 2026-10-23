@@ -39,6 +39,7 @@ const Cache = require('./Cache')
 const cache = new Cache()
 
 const CommandError = require('./error/CommandError')
+const scanner = require('./scanner')
 
 const SERVER_GROUPS = [
   {
@@ -332,3 +333,23 @@ async function listServersInGroup (groupId = '') {
 }
 exports.listServersInGroup = listServersInGroup
 bridge.commands.registerCommand('caspar.listServersInGroup', listServersInGroup)
+
+/**
+ * Media info and thumbnails from the CasparCG media-scanner
+ * on the same host as this server, port 8000.
+ * @param { string } serverId
+ * @returns { Promise.<object[]> }
+ */
+async function scannerMedia (serverId) {
+  const servers = await listServers()
+  const described = servers.find(server => server?.id === serverId)
+  const host = described?.host || casparManager.get(serverId)?.host
+  try {
+    return await scanner.listMedia(host)
+  } catch (err) {
+    logger.warn('Scanner media failed', err?.message)
+    return []
+  }
+}
+exports.scannerMedia = scannerMedia
+bridge.commands.registerCommand('caspar.scannerMedia', scannerMedia)
