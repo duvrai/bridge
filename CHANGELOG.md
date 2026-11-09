@@ -19,6 +19,8 @@
 - Updated dependencies
 - Updated to Electron 45
 - Redesigned the play and stop buttons
+### Fixed
+- Persist user defaults when they change, not only when Electron quits
 
 ## 1.0.3
 ### Added
