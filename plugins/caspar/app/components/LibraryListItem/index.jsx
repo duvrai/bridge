@@ -2,80 +2,8 @@ import React from 'react'
 import './style.css'
 
 import * as asset from '../../utils/asset.js'
-
-const DEFAULT_VALUES = {
-  [asset.type.still]: {
-    channel: 1,
-    layer: 10
-  },
-  [asset.type.video]: {
-    channel: 1,
-    layer: 10
-  },
-  [asset.type.audio]: {
-    channel: 1,
-    layer: 30
-  },
-  [asset.type.template]: {
-    channel: 1,
-    layer: 20
-  }
-}
-
-/**
- * Item constructor functions
- * for creating different types
- * of item inits based on
- * a specific condition
- */
-const ITEM_CONSTRUCTORS = [
-  {
-    if: item => [asset.type.still, asset.type.video, asset.type.audio].includes(item.type),
-    fn: item => {
-      return {
-        type: 'bridge.caspar.media',
-        data: {
-          name: item.name,
-          caspar: {
-            server: item?._filter?.serverId,
-            target: item.name,
-            ...(DEFAULT_VALUES[item.type] || {})
-          },
-          duration: asset.calculateDurationMs(item)
-        }
-      }
-    }
-  },
-  {
-    if: item => asset.type.template === item.type,
-    fn: item => {
-      return {
-        type: 'bridge.caspar.template',
-        data: {
-          name: item.name,
-          caspar: {
-            server: item?._filter?.serverId,
-            target: item.name,
-            ...(DEFAULT_VALUES[item.type] || {})
-          }
-        }
-      }
-    }
-  }
-]
-
-/**
- * Create an item init object for a library item
- * @param { LibraryAsset } libraryAsset
- * @returns { ItemInit | undefined }
- */
-function constructPlayableItemInit (libraryAsset) {
-  for (const constructor of ITEM_CONSTRUCTORS) {
-    if (constructor.if(libraryAsset)) {
-      return constructor.fn(libraryAsset)
-    }
-  }
-}
+import { formatScannerDetails } from '../../utils/mediaInfo.js'
+import { constructPlayableItemInit } from '../../utils/libraryItem.js'
 
 /**
  * @typedef { import('../../utils/asset.js').LibraryAsset } LibraryAsset
@@ -101,6 +29,15 @@ export const LibraryListItem = ({ item = {}, isHighlighted, isFocused, itemRef, 
     onDoubleClick?.(data)
   }
 
+  const details = formatScannerDetails(item?.scanner)
+  const showThumbnail = item?.type === asset.type.still || item?.type === asset.type.video
+  let thumbnail = null
+  if (showThumbnail && item?.scanner?.thumbnail) {
+    thumbnail = <img className='LibraryListItem-thumb' alt='' src={item.scanner.thumbnail} />
+  } else if (showThumbnail) {
+    thumbnail = <span className='LibraryListItem-thumb LibraryListItem-thumb--empty' />
+  }
+
   return (
     <li
       ref={itemRef}
@@ -110,8 +47,16 @@ export const LibraryListItem = ({ item = {}, isHighlighted, isFocused, itemRef, 
       onDoubleClick={e => handleDoubleClick(e)}
       draggable
     >
-      <div className='LibraryListItem-name LibraryListItem-col' title={item?.name}>
-        {item?.name}
+      {thumbnail}
+      <div className='LibraryListItem-main'>
+        <div className='LibraryListItem-name LibraryListItem-col' title={item?.name}>
+          {item?.name}
+        </div>
+        {
+          details && (
+            <div className='LibraryListItem-details'>{details}</div>
+          )
+        }
       </div>
       <div>
         <div className='LibraryListItem-col LibraryListItem-metadata'>

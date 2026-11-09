@@ -16,6 +16,7 @@
 - A new segmented input option for enums in the inspector
 - The ability to change input controls for a specific type using ui.control
 - Media info and thumbnails from the CasparCG media scanner
+- A column layout for the Caspar media library, with folders, sorting and saved widths
 ### Changed
 - Updated dependencies
 - Updated to Electron 45
