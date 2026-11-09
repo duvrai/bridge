@@ -11,6 +11,8 @@ import bridge from 'bridge'
 
 import objectPath from 'object-path'
 
+import { rundownMediaLabel } from '../../../../caspar/app/utils/rundownLabel.js'
+
 import './style.css'
 
 import { SharedContext } from '../../sharedContext'
@@ -22,6 +24,7 @@ import { RundownItemTimeSection } from '../RundownItemTimeSection'
 import { RundownItemIndicatorsSection } from '../RundownItemIndicatorsSection'
 
 import * as Layout from '../Layout'
+
 
 /**
  * An index of type properties
@@ -105,6 +108,8 @@ export function RundownItem ({ index, icon, item, dropzone, onDrop = () => {} })
     return bridge.items.renderValue(item.id, 'data.name')
   }, [item?.data?.name])
 
+  const mediaLabel = item?.type === 'bridge.caspar.media' ? rundownMediaLabel(item) : null
+
   const displaySettings = shared?.plugins?.['bridge-plugin-rundown']?.settings?.display
   const isCompact = shared?.plugins?.['bridge-plugin-rundown']?.settings?.compact
 
@@ -173,8 +178,8 @@ export function RundownItem ({ index, icon, item, dropzone, onDrop = () => {} })
                 </div>
               )
             }
-            <div className='RundownItem-name'>
-              {name}
+            <div className='RundownItem-name' title={mediaLabel ? mediaLabel.tooltip : name}>
+              {mediaLabel ? mediaLabel.fileName : name}
             </div>
             {
               displaySettings?.notes &&
@@ -187,7 +192,39 @@ export function RundownItem ({ index, icon, item, dropzone, onDrop = () => {} })
           </div>
           <div className='RundownItem-section RundownItem-section--right'>
             {
-              ([...properties, ...typeProperties])
+              mediaLabel && (
+                <div className='RundownItem-facts'>
+                  <span className='RundownItem-fact RundownItem-fact--id' title={item?.id}>
+                    <span className='RundownItem-factLabel'>ID</span>
+                    <span className='RundownItem-factValue'>{item?.id}</span>
+                  </span>
+                  <span className='RundownItem-fact RundownItem-fact--channel'>
+                    <span className='RundownItem-factLabel'>CH</span>
+                    <span className='RundownItem-factValue'>{item?.data?.caspar?.channel}</span>
+                  </span>
+                  <span className='RundownItem-fact RundownItem-fact--layer'>
+                    <span className='RundownItem-factLabel'>L</span>
+                    <span className='RundownItem-factValue'>{item?.data?.caspar?.layer}</span>
+                  </span>
+                  {
+                    mediaLabel.picture && (
+                      <span className='RundownItem-fact RundownItem-fact--raster' title={mediaLabel.pictureTitle}>
+                        <span className='RundownItem-factValue'>{mediaLabel.picture}</span>
+                      </span>
+                    )
+                  }
+                  {
+                    mediaLabel.timecode && (
+                      <span className='RundownItem-fact RundownItem-fact--duration' title={mediaLabel.secondsTitle}>
+                        <span className='RundownItem-factValue'>{mediaLabel.timecode}</span>
+                      </span>
+                    )
+                  }
+                </div>
+              )
+            }
+            {
+              !mediaLabel && ([...properties, ...typeProperties])
                 .filter(property => property.if)
                 .map((property, i) => {
                   /*

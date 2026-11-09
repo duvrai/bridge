@@ -17,6 +17,7 @@
 - The ability to change input controls for a specific type using ui.control
 - Media info and thumbnails from the CasparCG media scanner
 - A column layout for the Caspar media library, with folders, sorting and saved widths
+- Rundown rows show the media file name, with the folder as a tooltip, and the duration as SMPTE timecode
 ### Changed
 - Updated dependencies
 - Updated to Electron 45
