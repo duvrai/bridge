@@ -42,6 +42,17 @@ Do the same for Windows
 .Header-title {
   display: flex;
   align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.Header-projectName {
+  font-size: 0.85em;
+  opacity: 0.72;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-app-region: no-drag;
 }
 
 .Header-edited {
