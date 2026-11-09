@@ -2,10 +2,12 @@ import React from 'react'
 import bridge from 'bridge'
 
 import { LibraryHeader } from '../LibraryHeader'
-import { LibraryList } from '../LibraryList'
+import { LibraryTable } from '../LibraryTable'
 
 import * as asset from '../../utils/asset'
 import * as filterUtils from '../../utils/filter'
+import { libraryPath, scannerDisplayPath } from '../../utils/libraryColumns'
+import { exactFps, formatRaster } from '../../utils/mediaInfo'
 
 /**
  * Statuses that the
@@ -136,11 +138,27 @@ export const Library = ({ highlightItem, serverId, onItemClick, onItemDoubleClic
         }
 
         const res = await Promise.all(commands)
+        let scannerByName = {}
+        if (filterUtils.typeIncludesMedia(typeStr)) {
+          const scanned = await bridge.commands.executeCommand('caspar.scannerMedia', filter.serverId)
+          scannerByName = Object.fromEntries(
+            (scanned || []).map(row => [String(row?.casparId || row?.name || '').toUpperCase(), row])
+          )
+        }
         const sortedAssets = res
           .flat()
           .filter(item => item)
           .sort((a, b) => String(a.name || '').localeCompare(b.name || ''))
           .filter(item => filterUtils.filterByItemType(item?.type, typeStr))
+          .map(item => {
+            const scan = scannerByName[String(item.name || '').toUpperCase()]
+            const fromScanner = scannerDisplayPath(scan?.path)
+            return {
+              ...item,
+              scanner: scan,
+              displayPath: fromScanner || item.name
+            }
+          })
 
         setItems(sortedAssets)
         setStatus(STATUS.list)
@@ -164,8 +182,11 @@ export const Library = ({ highlightItem, serverId, onItemClick, onItemDoubleClic
     const query = (filter?.query || '').toLowerCase()
     return (items || [])
       .filter(item => {
-        return `${item.name || ''}`.toLowerCase()
-          .indexOf(query) >= 0
+        const scan = item.scanner
+        const raster = formatRaster(scan?.width, scan?.height, scan?.frameRate, scan?.fieldOrder)
+        const fps = exactFps(scan?.frameRate)
+        const haystack = `${libraryPath(item)} ${item.name || ''} ${raster} ${scan?.width || ''} ${scan?.height || ''} ${fps || ''}`.toLocaleLowerCase('nl')
+        return haystack.indexOf(query.toLocaleLowerCase('nl')) >= 0
       })
       .map(item => {
         item._filter = filter
@@ -211,8 +232,9 @@ export const Library = ({ highlightItem, serverId, onItemClick, onItemDoubleClic
       }
       {
         status === STATUS.list &&
-        <LibraryList
+        <LibraryTable
           items={filteredItems}
+          query={filter?.query || ''}
           highlightItem={highlightItem}
           onItemClick={onItemClick}
           onItemDoubleClick={onItemDoubleClick}
