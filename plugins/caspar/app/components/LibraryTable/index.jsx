@@ -297,7 +297,7 @@ export const LibraryTable = ({ items = [], query = '', highlightItem, onItemClic
                         }}
                         onClick={() => toggleSort(column.id)}
                       >
-                        {column.label} {marker}
+                        {column.label}{marker ? <span className='LibraryTable-sortMark'> {marker}</span> : null}
                       </span>
                       <span
                         className='LibraryTable-resize'
