@@ -16,6 +16,7 @@
 - A new segmented input option for enums in the inspector
 - The ability to change input controls for a specific type using ui.control
 - Media info and thumbnails from the CasparCG media scanner
+- Rundown rows show the media file name, with the folder as a tooltip, and the duration as SMPTE timecode
 ### Changed
 - Updated dependencies
 - Updated to Electron 45
