@@ -15,6 +15,7 @@
 - Implemented a more user friendly SMPTE timecode input component in the inspector
 - A new segmented input option for enums in the inspector
 - The ability to change input controls for a specific type using ui.control
+- Server-side project files when APP_DATA_BASE_PATH is set, with a project list at /
 ### Changed
 - Updated dependencies
 - Updated to Electron 45
