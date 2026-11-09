@@ -21,6 +21,7 @@
 - Redesigned the play and stop buttons
 ### Fixed
 - Use an absolute APP_DATA_BASE_PATH as the data directory instead of joining it onto the module path
+- Persist user defaults when they change, not only when Electron quits
 
 ## 1.0.3
 ### Added
