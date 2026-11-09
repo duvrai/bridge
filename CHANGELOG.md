@@ -21,6 +21,8 @@
 - Updated dependencies
 - Updated to Electron 45
 - Redesigned the play and stop buttons
+### Fixed
+- Keep the Caspar library column header opaque, and use the accent color only for the sort mark
 
 ## 1.0.3
 ### Added
